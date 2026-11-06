@@ -137,6 +137,8 @@ local function makeNumericInput(parent, value, onCommit)
     input:SetSize(80, 24)
     input:SetAutoFocus(false)
     input:SetNumeric(false)
+    input:SetFontObject("GameFontHighlight")
+    input:SetTextInsets(4, 4, 0, 0)
     input:SetText(tostring(value))
 
     local function commit()
@@ -178,6 +180,7 @@ local function createOptionsPanel()
 
     local yOffset = -76
     local rowSpacing = 42
+    local numericInputs = {}
 
     local sharpen = makeCheckButton(panel, "Resample always sharpen", ForeverGraphicsDB.ResampleAlwaysSharpen, function(checked)
         ForeverGraphicsDB.ResampleAlwaysSharpen = checked
@@ -211,10 +214,20 @@ local function createOptionsPanel()
                 setCVar(setting.cvar, number)
             end
         end)
+        numericInputs[#numericInputs + 1] = {
+            input = input,
+            key = setting.key,
+        }
         input:SetPoint("LEFT", label, "RIGHT", 12, 0)
         checkbox:SetPoint("TOPLEFT", 16, yOffset)
         yOffset = yOffset - rowSpacing
     end
+
+    panel:SetScript("OnShow", function()
+        for _, row in ipairs(numericInputs) do
+            row.input:SetText(tostring(ForeverGraphicsDB[row.key]))
+        end
+    end)
 
     local applyButton = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
     applyButton:SetSize(120, 26)

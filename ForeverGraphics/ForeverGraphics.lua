@@ -138,8 +138,14 @@ local function makeNumericInput(parent, value, onCommit)
     input:SetAutoFocus(false)
     input:SetNumeric(false)
     input:SetFontObject("GameFontHighlight")
+    input:SetTextColor(1, 1, 1, 1)
+    input:SetJustifyH("CENTER")
     input:SetTextInsets(4, 4, 0, 0)
     input:SetText(tostring(value))
+
+    local valueText = input:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    valueText:SetPoint("CENTER", input, "CENTER", 0, 0)
+    valueText:SetText(tostring(value))
 
     local function commit()
         local number = tonumber(input:GetText())
@@ -152,8 +158,22 @@ local function makeNumericInput(parent, value, onCommit)
         value = number
         onCommit(number)
         input:SetText(tostring(number))
+        valueText:SetText(tostring(number))
     end
 
+    input:SetScript("OnShow", function(self)
+        self:SetText(tostring(value))
+        valueText:SetText(tostring(value))
+    end)
+    input:SetScript("OnEditFocusGained", function(self)
+        valueText:Hide()
+        self:SetText(tostring(value))
+    end)
+    input:SetScript("OnEditFocusLost", function()
+        commit()
+        valueText:SetText(tostring(value))
+        valueText:Show()
+    end)
     input:SetScript("OnEnterPressed", function(self)
         commit()
         self:ClearFocus()
@@ -163,7 +183,7 @@ local function makeNumericInput(parent, value, onCommit)
         self:ClearFocus()
     end)
 
-    return input
+    return input, valueText
 end
 
 local function createOptionsPanel()
@@ -208,7 +228,7 @@ local function createOptionsPanel()
         label:SetPoint("LEFT", checkbox, "RIGHT", 76, 0)
         label:SetText(setting.label)
 
-        local input = makeNumericInput(panel, ForeverGraphicsDB[setting.key], function(number)
+        local input, valueText = makeNumericInput(panel, ForeverGraphicsDB[setting.key], function(number)
             ForeverGraphicsDB[setting.key] = number
             if ForeverGraphicsDB[setting.enabledKey] then
                 setCVar(setting.cvar, number)
@@ -216,16 +236,27 @@ local function createOptionsPanel()
         end)
         numericInputs[#numericInputs + 1] = {
             input = input,
+            valueText = valueText,
             key = setting.key,
         }
         input:SetPoint("LEFT", label, "RIGHT", 12, 0)
+        input:SetText(tostring(ForeverGraphicsDB[setting.key]))
         checkbox:SetPoint("TOPLEFT", 16, yOffset)
         yOffset = yOffset - rowSpacing
     end
 
-    panel:SetScript("OnShow", function()
+    local function refreshNumericInputs()
         for _, row in ipairs(numericInputs) do
-            row.input:SetText(tostring(ForeverGraphicsDB[row.key]))
+            local value = tostring(ForeverGraphicsDB[row.key])
+            row.input:SetText(value)
+            row.valueText:SetText(value)
+        end
+    end
+
+    panel:SetScript("OnShow", function()
+        refreshNumericInputs()
+        if C_Timer and C_Timer.After then
+            C_Timer.After(0, refreshNumericInputs)
         end
     end)
 

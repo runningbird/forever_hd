@@ -1,4 +1,4 @@
-## Interface: 120000
+## Interface: 16001
 ## Title: Forever Graphics
 ## Notes: Configure graphics console variables from the Settings panel.
 ## Author: Forever Graphics

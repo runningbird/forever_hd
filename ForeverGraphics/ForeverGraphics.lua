@@ -57,19 +57,21 @@ local function report(message)
 end
 
 local function setCVar(name, value)
-    if not C_CVar or not C_CVar.SetCVar then
-        report("This client does not expose C_CVar.SetCVar; unable to set " .. name .. ".")
+    local setFunction = C_CVar and C_CVar.SetCVar or SetCVar
+    local getFunction = C_CVar and C_CVar.GetCVar or GetCVar
+    if not setFunction then
+        report("This client does not expose a CVar setter; unable to set " .. name .. ".")
         return false
     end
 
-    local success, errorMessage = pcall(C_CVar.SetCVar, name, tostring(value))
+    local success, errorMessage = pcall(setFunction, name, tostring(value))
     if not success then
         report("Could not set " .. name .. ": " .. tostring(errorMessage))
         return false
     end
 
-    if C_CVar.GetCVar then
-        local readSuccess, actualValue = pcall(C_CVar.GetCVar, name)
+    if getFunction then
+        local readSuccess, actualValue = pcall(getFunction, name)
         if not readSuccess then
             report("Could not verify " .. name .. ": " .. tostring(actualValue))
             return false

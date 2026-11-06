@@ -1,0 +1,8 @@
+## Interface: 120000
+## Title: Forever Graphics
+## Notes: Configure graphics console variables from the Settings panel.
+## Author: Forever Graphics
+## Version: 1.0.0
+## SavedVariables: ForeverGraphicsDB
+
+ForeverGraphics.lua
